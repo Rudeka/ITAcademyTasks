@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShortestPathFinder
 {
@@ -12,7 +10,7 @@ namespace ShortestPathFinder
         {
             var dimension = new AreaDimension() { Hight = 1000, Width = 1000 };
             var startPoint = new CoOrds() { X = 0, Y = 0 };
-            var targetPoint = new CoOrds() { X = 999, Y = 999 };
+            var targetPoint = new CoOrds() { X = 8, Y = 8 };
             var knightMovements = new KnightMovements();
 
             var finder = new ShortestPathFinder(dimension, startPoint, targetPoint, knightMovements);
@@ -43,6 +41,7 @@ namespace ShortestPathFinder
             {
                 var checkedPoints = new bool[dimension.Hight, dimension.Width];
                 var uncheckedPoints = new Queue<CoOrds>();
+                var parent = new Dictionary<CoOrds, CoOrds>();
 
                 uncheckedPoints.Enqueue(startPointCoords);
                 checkedPoints[startPointCoords.X, startPointCoords.Y] = true;
@@ -72,21 +71,50 @@ namespace ShortestPathFinder
                             if (!checkedPoints[stepX, stepY])
                             {
                                 var newUncheckedPoint = new CoOrds() { X = stepX, Y = stepY, Steps = stepsCounter };
+                                parent.Add(newUncheckedPoint, currentPoint);
                                 uncheckedPoints.Enqueue(newUncheckedPoint);
                                 checkedPoints[stepX, stepY] = true;
 
                                 if (IsTargetPoint(newUncheckedPoint))
                                 {
+                                    var path = GetPath(parent, targetPointCoords, startPointCoords);
+
+
                                     Console.WriteLine("Target point has been found and it took {0} steps", currentPoint.Steps);
+                                    Console.WriteLine(path);
                                     Console.ReadLine();
+
+
                                 }
                             }
                         }
                     }
                 }
             }
+
+            public string GetPath(Dictionary<CoOrds, CoOrds> parentTrack, CoOrds targetPoint, CoOrds startPoint)
+            {
+                var pathArray = new List<CoOrds>();
+                
+                if (parentTrack.ContainsKey(targetPoint))
+                {
+                    var backTrack = targetPoint;
+                    do
+                    {
+                        pathArray.Add(backTrack);
+                        backTrack = parentTrack[backTrack];
+                    } while (backTrack != startPoint);
+                    pathArray.Reverse();
+                }
+
+                var pathMessage = pathArray.Aggregate("My moves: ", (current, point) => current + (point.X + "," + point.Y + " => "));
+
+                return pathMessage;
+            }
         }
     }
+
+
 
     public interface IMovements
     {
